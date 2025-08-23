@@ -166,17 +166,6 @@ router.post('/auth/login', async (req, res) => {
     console.error('💥 [AUTH] Authentication error:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
-const router = Router();
-
-import { Router } from 'express';
-const router = Router();
-
-router.post('/login', (req, res) => {
-  const { email, password } = req.body;
-  if (email === 'test@example.com' && password === 'test') {
-    return res.json({ token: 'dummy-token' });
-  }
-  return res.status(401).json({ error: 'Invalid credentials' });
 });
 
 export default router;

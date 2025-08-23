@@ -5,7 +5,6 @@ export { apiClient } from './api/client';
 
 // Legacy API functions for backward compatibility
 import { authApi } from './api/auth';
-import { userApi } from './api/user';
 import { apiClient } from './api/client';
 
 export const API_BASE: string =

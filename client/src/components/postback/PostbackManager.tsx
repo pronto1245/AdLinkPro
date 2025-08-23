@@ -11,7 +11,6 @@ import { Switch } from '@/components/ui/switch';
 import { Plus, Edit, Trash2, ExternalLink, Copy, RotateCcw } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { useLanguage } from '@/contexts/LanguageContext';
 import { apiRequest } from '@/lib/queryClient';
 import TrackingUrlGenerator from './TrackingUrlGenerator';
 

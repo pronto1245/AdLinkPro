@@ -107,7 +107,7 @@ export function useLoginForm(options: UseLoginFormOptions = {}) {
  * Get default redirect path based on user role
  */
 function getDefaultPathForRole(role?: string): string {
-  if (!role) return '/dashboard';
+  if (!role) {return '/dashboard';}
   
   const roleMap: Record<string, string> = {
     'advertiser': '/dashboard/advertiser',

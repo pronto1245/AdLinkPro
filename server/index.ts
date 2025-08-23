@@ -10,9 +10,9 @@ import { Pool } from 'pg';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
-import authRouter from '../src/routes/auth';
 // import { authV2Router } from './routes/auth-v2'; // TODO: Create this route or remove if not needed
 import { authFixedRouter } from './routes/auth-fixed';
+import { setupSwagger } from './config/swagger';
 import { adminRoutes } from './routes/admin-routes';
 import { invitationRoutes } from './routes/invitations';
 import { registerRoutes } from './routes'; // Import the main routes that contain registration endpoints
@@ -59,6 +59,9 @@ if (!fs.existsSync(logsDir)) {
 
 // Add request logging
 app.use(requestLogger);
+
+// Setup API documentation
+setupSwagger(app);
 
 // DB
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });

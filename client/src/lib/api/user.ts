@@ -76,11 +76,11 @@ export const userApi = {
     console.log('[USER_API] Listing users with query:', query);
     const params = new URLSearchParams();
     
-    if (query.page) params.append('page', query.page.toString());
-    if (query.limit) params.append('limit', query.limit.toString());
-    if (query.role) params.append('role', query.role);
-    if (query.search) params.append('search', query.search);
-    if (query.status) params.append('status', query.status);
+    if (query.page) {params.append('page', query.page.toString());}
+    if (query.limit) {params.append('limit', query.limit.toString());}
+    if (query.role) {params.append('role', query.role);}
+    if (query.search) {params.append('search', query.search);}
+    if (query.status) {params.append('status', query.status);}
     
     const url = `/api/users${params.toString() ? '?' + params.toString() : ''}`;
     return apiClient.get<UserListResponse>(url);
