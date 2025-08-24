@@ -9,22 +9,22 @@ import { registerRoutes } from "./routes.js";
 const app = express();
 const PORT = process.env.PORT || 8000;
 
-// Add basic middleware
+// Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Add static file serving before registering API routes
-const frontendPath = path.join(__dirname, "..", "dist");
+// ✅ Путь к client/dist
+const frontendPath = path.join(__dirname, "..", "client", "dist");
 app.use(express.static(frontendPath));
 
-// Register all API routes and middleware
+// Роуты API
 registerRoutes(app).then((server) => {
-  // Add SPA fallback after all API routes are registered
+  // SPA fallback
   app.get("*", (_, res) => {
     res.sendFile(path.join(frontendPath, "index.html"));
   });
 
-  // Start the server
+  // Запуск сервера
   server.listen(PORT, () => {
     console.log(`🚀 Server running at http://localhost:${PORT}`);
   });
