@@ -1,8 +1,8 @@
 {
   "name": "client",
   "version": "1.0.0",
-  "type": "module",
   "scripts": {
+    "deploy": "netlify deploy --prod --dir=dist",
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview"
@@ -47,6 +47,7 @@
     "@uppy/progress-bar": "^4.3.2",
     "@uppy/react": "^4.5.2",
     "@uppy/xhr-upload": "^4.4.2",
+    "axios": "^1.11.0",
     "bcryptjs": "^3.0.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

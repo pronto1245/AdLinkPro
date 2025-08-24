@@ -1,0 +1,1 @@
+import{j as e}from"./ui-CkQMVfNu.js";import"./vendor-DazevGLP.js";function r(){return e.jsx("div",{className:"p-6 text-sm opacity-70",children:"Super Admin → Users Management (в разработке)"})}export{r as default};

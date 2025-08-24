@@ -1,0 +1,1 @@
+function a(s){return`${Math.ceil(s*100)/100}%`}function e(s,t="USD"){const o=typeof s=="string"?parseFloat(s):s;return isNaN(o)?"0":`${{USD:"$",EUR:"€",RUB:"₽",GBP:"£"}[t]||t}${o}`}export{e as a,a as f};

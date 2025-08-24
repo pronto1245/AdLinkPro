@@ -1,0 +1,1 @@
+import{j as r}from"./ui-CkQMVfNu.js";import"./vendor-DazevGLP.js";function i(){return r.jsx("div",{className:"p-6 text-sm opacity-70",children:"Partner → Profile (в разработке)"})}export{i as default};

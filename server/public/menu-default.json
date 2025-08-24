@@ -1,0 +1,11 @@
+{
+  "items": [
+    { "label": "Дашборд", "href": "/dashboard/advertiser", "icon": "activity" },
+    { "label": "Офферы", "href": "/offers", "icon": "zap" },
+    { "label": "Статистика", "href": "/statistics", "icon": "chart" },
+    { "label": "Финансы", "href": "/finances", "icon": "dollar-sign" },
+    { "label": "Уведомления", "href": "/notifications", "icon": "bell" }
+  ],
+  "userRole": "advertiser",
+  "permissions": []
+}

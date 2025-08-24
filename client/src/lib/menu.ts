@@ -1,4 +1,4 @@
-import { api } from './api';
+import { secureApi as api } from "./secure";
 
 export interface MenuData {
   items: Array<{

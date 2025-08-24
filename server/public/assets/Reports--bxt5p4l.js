@@ -1,0 +1,1 @@
+import{j as r}from"./ui-CkQMVfNu.js";import"./vendor-DazevGLP.js";function e(){return r.jsxs("div",{style:{padding:24},children:[r.jsx("h1",{children:"Отчёты"}),r.jsx("p",{children:"Раздел отчётов рекламодателя."})]})}export{e as default};

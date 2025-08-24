@@ -1,0 +1,20 @@
+[
+  {
+    "id": "of-1",
+    "name": "Crypto App",
+    "payout": 4.20,
+    "category": "Finance",
+    "countries": ["DE","AT","CH"],
+    "status": "active",
+    "preview_url": "https://example.com/crypto"
+  },
+  {
+    "id": "of-2",
+    "name": "Streaming Trial",
+    "payout": 2.30,
+    "category": "Entertainment",
+    "countries": ["US","CA","UK"],
+    "status": "paused",
+    "preview_url": "https://example.com/stream"
+  }
+]

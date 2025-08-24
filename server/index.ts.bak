@@ -1,0 +1,31 @@
+import authRouter from './routes/auth';
+import authRouter from './routes/auth';
+import authRouter from './routes/auth';
+import 'dotenv/config';
+import express from 'express';
+import helmet from 'helmet';
+import compression from 'compression';
+import rateLimit from 'express-rate-limit';
+import jwt from 'jsonwebtoken';
+import bcryptjs from 'bcryptjs';
+import { Pool } from 'pg';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import fs from 'fs';
+import authRouter from '../src/routes/auth';
+// import { authV2Router } from './routes/auth-v2'; // TODO: Create this route or remove if not needed
+import { authFixedRouter } from './routes/auth-fixed';
+import { adminRoutes } from './routes/admin-routes';
+import { invitationRoutes } from './routes/invitations';
+import { registerRoutes } from './routes'; // Import the main routes that contain registration endpoints
+import { requestLogger, errorLogger } from './middleware/logging';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const app = express();
+app.use('/api/auth', authRouter);
+app.use('/api/auth', authRouter);
+const app = express();
+app.use(/api/auth, authRouter);
+app.use('/api/auth', authRouter);

@@ -1,0 +1,1 @@
+import"./ui-CkQMVfNu.js";import{r as t}from"./vendor-DazevGLP.js";const o=t.createContext(void 0);function s(){const e=t.useContext(o);if(e===void 0)throw new Error("useTheme must be used within a ThemeProvider");return e}export{s as u};

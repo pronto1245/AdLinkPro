@@ -1,0 +1,1 @@
+import{j as t}from"./ui-CkQMVfNu.js";import"./vendor-DazevGLP.js";function s(){return t.jsx("div",{className:"p-6 text-sm opacity-70",children:"Super Admin → Analytics (в разработке)"})}export{s as default};
