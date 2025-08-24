@@ -6,8 +6,10 @@
   "scripts": {
     "reset-users": "tsx server/reset-users.ts",
     "dev": "NODE_ENV=development tsx server/index.ts",
-    "build": "esbuild server/index.ts --platform=node --bundle --format=cjs --outdir=dist",
-    "start": "NODE_ENV=production node dist/index.js",
+    "build": "npm run build:client",
+    "start": "NODE_ENV=production npx tsx server/index.ts",
+    "start:node": "NODE_ENV=production node dist/server.js",
+    "build:production": "npm run build:client && node build-server.mjs",
     "check": "tsc",
     "lint": "eslint server/**/*.ts client/src/**/*.{ts,tsx}",
     "lint:fix": "eslint server/**/*.ts client/src/**/*.{ts,tsx} --fix",

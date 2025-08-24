@@ -4,25 +4,31 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 import express from "express";
 import path from "path";
-import authRoutes from "./routes/auth";
+import { registerRoutes } from "./routes.js";
 
 const app = express();
-const PORT = 8000;
+const PORT = process.env.PORT || 8000;
 
+// Add basic middleware
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// API
-app.use("/api/auth", authRoutes);
-
-// Статика
-const frontendPath = path.join(__dirname, "..", "client", "dist");
+// Add static file serving before registering API routes
+const frontendPath = path.join(__dirname, "..", "dist");
 app.use(express.static(frontendPath));
 
-// SPA — index.html
-app.get("*", (_, res) => {
-  res.sendFile(path.join(frontendPath, "index.html"));
-});
+// Register all API routes and middleware
+registerRoutes(app).then((server) => {
+  // Add SPA fallback after all API routes are registered
+  app.get("*", (_, res) => {
+    res.sendFile(path.join(frontendPath, "index.html"));
+  });
 
-app.listen(PORT, () => {
-  console.log(`🚀 Server running at http://localhost:${PORT}`);
+  // Start the server
+  server.listen(PORT, () => {
+    console.log(`🚀 Server running at http://localhost:${PORT}`);
+  });
+}).catch((error) => {
+  console.error("Failed to start server:", error);
+  process.exit(1);
 });

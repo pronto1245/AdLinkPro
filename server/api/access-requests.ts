@@ -1,5 +1,5 @@
 import { Express } from 'express';
-import { authenticateToken, requireRole, getAuthenticatedUser } from '../middleware/auth';
+import { authenticateToken, requireRole, getAuthenticatedUser } from '../middleware/authorization';
 import { storage } from '../storage';
 import { randomUUID } from 'crypto';
 

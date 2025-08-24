@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import type { Request, Response } from 'express';
 import type { User } from '@shared/schema';
-import { requireAuth } from '../middleware/auth';
+import { requireAuth } from '../middleware/authorization';
 import { AnalyticsService } from '../services/analyticsService';
 
 // Extend Express Request type
