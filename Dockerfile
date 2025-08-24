@@ -1,25 +1,26 @@
-FROM node:20-alpine AS deps
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci
-
+# Этап 1: Build
 FROM node:20-alpine AS build
+
 WORKDIR /app
-RUN apk add --no-cache libc6-compat
-COPY --from=deps /app/node_modules ./node_modules
+
+COPY package*.json ./
+RUN npm install
+
 COPY . .
 RUN npm run build
 
-FROM node:20-alpine AS runner
+# Этап 2: Production
+FROM node:20-alpine AS prod
+
 WORKDIR /app
+
 ENV NODE_ENV=production
+ENV PORT=8000
 
-# ставим только prod-deps
-COPY package*.json ./
-RUN npm ci --omit=dev && npm cache clean --force
+COPY --from=build /app/dist ./dist
+COPY --from=build /app/package*.json ./
+COPY --from=build /app/node_modules ./node_modules
 
-# берем только собранный dist
-COPY --from=build /app/client/dist ./dist
+EXPOSE 8000
 
-# Koyeb сам передаст PORT
-CMD ["npm","start"]
+CMD ["node", "dist/index.js"]

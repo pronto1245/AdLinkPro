@@ -1,9 +1,8 @@
 node_modules
 dist
-client/dist
-.git
-.gitignore
-*.log
 .env
-.env.*
-.DS_Store
+Dockerfile
+docker-compose.yml
+*.log
+.vscode
+*.tsbuildinfo
