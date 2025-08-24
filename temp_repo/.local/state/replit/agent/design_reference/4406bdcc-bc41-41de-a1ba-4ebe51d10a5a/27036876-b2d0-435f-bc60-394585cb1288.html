@@ -1,0 +1,609 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Affiliate Marketing Platform - Super Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif']
+                    },
+                    colors: {
+                        primary: {
+                            50: '#EFF6FF',
+                            500: '#3B82F6',
+                            600: '#2563EB',
+                            700: '#1D4ED8'
+                        }
+                    }
+                }
+            }
+        };
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .chart-container {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .metric-card {
+            transition: all 0.3s ease;
+        }
+        .metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 font-inter">
+    <!-- @COMPONENT: MainLayout -->
+    <div class="flex h-screen overflow-hidden">
+        
+        <!-- @COMPONENT: Sidebar -->
+        <!-- Sidebar Navigation -->
+        <aside class="fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200 transform transition-transform duration-300 lg:translate-x-0">
+            <div class="flex flex-col h-full">
+                <!-- Logo -->
+                <div class="flex items-center px-6 py-4 border-b border-slate-200">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-chart-network text-white text-sm"></i>
+                        </div>
+                        <div>
+                            <h1 class="text-lg font-bold text-slate-900">AffiliateHub</h1>
+                            <p class="text-xs text-slate-500">Super Admin</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Navigation Menu -->
+                <nav class="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
+                    <!-- @MAP: menuItems.map(item => ( -->
+                    <a href="#" class="flex items-center px-3 py-2 text-sm font-medium text-white bg-primary-500 rounded-lg group" data-mock="true">
+                        <i class="fas fa-tachometer-alt w-5 h-5 mr-3"></i>
+                        Dashboard
+                    </a>
+                    
+                    <a href="#" class="flex items-center px-3 py-2 text-sm font-medium text-slate-700 rounded-lg hover:bg-slate-100 group">
+                        <i class="fas fa-users w-5 h-5 mr-3 text-slate-400"></i>
+                        Users
+                        <span class="ml-auto bg-red-100 text-red-600 text-xs font-medium px-2 py-1 rounded-full" data-mock="true">3</span>
+                    </a>
+
+                    <a href="#" class="flex items-center px-3 py-2 text-sm font-medium text-slate-700 rounded-lg hover:bg-slate-100 group">
+                        <i class="fas fa-bullseye w-5 h-5 mr-3 text-slate-400"></i>
+                        Offers
+                    </a>
+
+                    <a href="#" class="flex items-center px-3 py-2 text-sm font-medium text-slate-700 rounded-lg hover:bg-slate-100 group">
+                        <i class="fas fa-dollar-sign w-5 h-5 mr-3 text-slate-400"></i>
+                        Finance
+                    </a>
+
+                    <a href="#" class="flex items-center px-3 py-2 text-sm font-medium text-slate-700 rounded-lg hover:bg-slate-100 group">
+                        <i class="fas fa-link w-5 h-5 mr-3 text-slate-400"></i>
+                        Postbacks
+                    </a>
+
+                    <a href="#" class="flex items-center px-3 py-2 text-sm font-medium text-slate-700 rounded-lg hover:bg-slate-100 group">
+                        <i class="fas fa-shield-alt w-5 h-5 mr-3 text-slate-400"></i>
+                        Anti-Fraud
+                    </a>
+
+                    <a href="#" class="flex items-center px-3 py-2 text-sm font-medium text-slate-700 rounded-lg hover:bg-slate-100 group">
+                        <i class="fas fa-chart-bar w-5 h-5 mr-3 text-slate-400"></i>
+                        Analytics
+                    </a>
+
+                    <a href="#" class="flex items-center px-3 py-2 text-sm font-medium text-slate-700 rounded-lg hover:bg-slate-100 group">
+                        <i class="fas fa-ticket-alt w-5 h-5 mr-3 text-slate-400"></i>
+                        Support
+                    </a>
+
+                    <a href="#" class="flex items-center px-3 py-2 text-sm font-medium text-slate-700 rounded-lg hover:bg-slate-100 group">
+                        <i class="fas fa-plug w-5 h-5 mr-3 text-slate-400"></i>
+                        Integrations
+                    </a>
+
+                    <a href="#" class="flex items-center px-3 py-2 text-sm font-medium text-slate-700 rounded-lg hover:bg-slate-100 group">
+                        <i class="fas fa-cog w-5 h-5 mr-3 text-slate-400"></i>
+                        Settings
+                    </a>
+                    <!-- @END_MAP -->
+                </nav>
+
+                <!-- User Profile -->
+                <div class="p-4 border-t border-slate-200">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
+                            <span class="text-white text-sm font-medium" data-mock="true">SA</span>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-medium text-slate-900" data-bind="user.name" data-mock="true">Super Admin</p>
+                            <p class="text-xs text-slate-500" data-bind="user.email" data-mock="true">admin@affiliatehub.com</p>
+                        </div>
+                        <button class="text-slate-400 hover:text-slate-600">
+                            <i class="fas fa-sign-out-alt w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </aside>
+        <!-- @END_COMPONENT: Sidebar -->
+
+        <!-- @COMPONENT: MainContent -->
+        <!-- Main Content -->
+        <main class="flex-1 lg:ml-64 overflow-y-auto">
+            <!-- Top Bar -->
+            <header class="bg-white border-b border-slate-200 px-6 py-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-4">
+                        <button class="lg:hidden text-slate-600">
+                            <i class="fas fa-bars w-6 h-6"></i>
+                        </button>
+                        <div>
+                            <h2 class="text-2xl font-bold text-slate-900">Dashboard</h2>
+                            <p class="text-sm text-slate-600">Welcome back! Here's what's happening today.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center space-x-4">
+                        <!-- Language Switcher -->
+                        <select class="text-sm border-0 bg-transparent text-slate-600 focus:ring-0">
+                            <option value="en">🇺🇸 English</option>
+                            <option value="ru">🇷🇺 Русский</option>
+                        </select>
+                        
+                        <!-- Notifications -->
+                        <button class="relative p-2 text-slate-600 hover:text-slate-900">
+                            <i class="fas fa-bell w-5 h-5"></i>
+                            <span class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full" data-mock="true"></span>
+                        </button>
+                        
+                        <!-- Live Traffic Indicator -->
+                        <div class="flex items-center space-x-2 px-3 py-2 bg-green-50 rounded-lg">
+                            <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                            <span class="text-sm text-green-700" data-bind="liveTraffic" data-mock="true">247 online</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Dashboard Content -->
+            <div class="p-6 space-y-6">
+                
+                <!-- @COMPONENT: MetricsGrid -->
+                <!-- Key Metrics Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <!-- @MAP: metrics.map(metric => ( -->
+                    <div class="metric-card bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-slate-600">Total Revenue</p>
+                                <p class="text-2xl font-bold text-slate-900" data-bind="totalRevenue" data-mock="true">$1,247,890</p>
+                                <div class="flex items-center mt-2">
+                                    <i class="fas fa-arrow-up text-green-500 text-xs"></i>
+                                    <span class="text-xs text-green-600 ml-1" data-mock="true">+12.5%</span>
+                                    <span class="text-xs text-slate-500 ml-1">vs last month</span>
+                                </div>
+                            </div>
+                            <div class="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-dollar-sign text-blue-500"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="metric-card bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-slate-600">Active Partners</p>
+                                <p class="text-2xl font-bold text-slate-900" data-bind="activePartners" data-mock="true">1,847</p>
+                                <div class="flex items-center mt-2">
+                                    <i class="fas fa-arrow-up text-green-500 text-xs"></i>
+                                    <span class="text-xs text-green-600 ml-1" data-mock="true">+8.2%</span>
+                                    <span class="text-xs text-slate-500 ml-1">vs last month</span>
+                                </div>
+                            </div>
+                            <div class="w-12 h-12 bg-green-50 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-users text-green-500"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="metric-card bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-slate-600">Conversion Rate</p>
+                                <p class="text-2xl font-bold text-slate-900" data-bind="conversionRate" data-mock="true">3.24%</p>
+                                <div class="flex items-center mt-2">
+                                    <i class="fas fa-arrow-down text-red-500 text-xs"></i>
+                                    <span class="text-xs text-red-600 ml-1" data-mock="true">-2.1%</span>
+                                    <span class="text-xs text-slate-500 ml-1">vs last month</span>
+                                </div>
+                            </div>
+                            <div class="w-12 h-12 bg-purple-50 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-chart-line text-purple-500"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="metric-card bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-slate-600">Fraud Rate</p>
+                                <p class="text-2xl font-bold text-slate-900" data-bind="fraudRate" data-mock="true">0.12%</p>
+                                <div class="flex items-center mt-2">
+                                    <i class="fas fa-arrow-down text-green-500 text-xs"></i>
+                                    <span class="text-xs text-green-600 ml-1" data-mock="true">-0.05%</span>
+                                    <span class="text-xs text-slate-500 ml-1">vs last month</span>
+                                </div>
+                            </div>
+                            <div class="w-12 h-12 bg-red-50 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-shield-alt text-red-500"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- @END_MAP -->
+                </div>
+                <!-- @END_COMPONENT: MetricsGrid -->
+
+                <!-- Charts and Activity -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    
+                    <!-- @COMPONENT: RevenueChart -->
+                    <!-- Revenue Chart -->
+                    <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                        <div class="flex items-center justify-between mb-6">
+                            <div>
+                                <h3 class="text-lg font-semibold text-slate-900">Revenue Overview</h3>
+                                <p class="text-sm text-slate-600">Last 7 days performance</p>
+                            </div>
+                            <select class="text-sm border border-slate-200 rounded-lg px-3 py-2 bg-white">
+                                <option>Last 7 days</option>
+                                <option>Last 30 days</option>
+                                <option>Last 90 days</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Mock Chart -->
+                        <div class="chart-container h-64 rounded-lg flex items-end justify-center space-x-2 p-4">
+                            <!-- @FUNCTIONALITY: Implement Chart.js or similar library for revenue visualization -->
+                            <div class="bg-white bg-opacity-20 rounded-t w-8 h-16"></div>
+                            <div class="bg-white bg-opacity-30 rounded-t w-8 h-24"></div>
+                            <div class="bg-white bg-opacity-40 rounded-t w-8 h-32"></div>
+                            <div class="bg-white bg-opacity-60 rounded-t w-8 h-40"></div>
+                            <div class="bg-white bg-opacity-80 rounded-t w-8 h-48"></div>
+                            <div class="bg-white bg-opacity-50 rounded-t w-8 h-36"></div>
+                            <div class="bg-white bg-opacity-70 rounded-t w-8 h-44"></div>
+                        </div>
+                    </div>
+                    <!-- @END_COMPONENT: RevenueChart -->
+
+                    <!-- @COMPONENT: RecentActivity -->
+                    <!-- Recent Activity -->
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-lg font-semibold text-slate-900">Recent Activity</h3>
+                            <button class="text-sm text-blue-600 hover:text-blue-700">View all</button>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <!-- @MAP: activities.map(activity => ( -->
+                            <div class="flex items-start space-x-3" data-mock="true">
+                                <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mt-1">
+                                    <i class="fas fa-user-plus text-green-600 text-xs"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm text-slate-900">New partner registered</p>
+                                    <p class="text-xs text-slate-500">john.doe@example.com</p>
+                                    <p class="text-xs text-slate-400 mt-1">2 minutes ago</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-start space-x-3" data-mock="true">
+                                <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mt-1">
+                                    <i class="fas fa-bullseye text-blue-600 text-xs"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm text-slate-900">New offer published</p>
+                                    <p class="text-xs text-slate-500">Crypto Exchange - $150 CPA</p>
+                                    <p class="text-xs text-slate-400 mt-1">15 minutes ago</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-start space-x-3" data-mock="true">
+                                <div class="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center mt-1">
+                                    <i class="fas fa-exclamation-triangle text-yellow-600 text-xs"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm text-slate-900">Fraud alert triggered</p>
+                                    <p class="text-xs text-slate-500">Suspicious activity detected</p>
+                                    <p class="text-xs text-slate-400 mt-1">1 hour ago</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-start space-x-3" data-mock="true">
+                                <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mt-1">
+                                    <i class="fas fa-dollar-sign text-green-600 text-xs"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm text-slate-900">Payout processed</p>
+                                    <p class="text-xs text-slate-500">$2,450 to affiliate #1248</p>
+                                    <p class="text-xs text-slate-400 mt-1">3 hours ago</p>
+                                </div>
+                            </div>
+                            <!-- @END_MAP -->
+                        </div>
+                    </div>
+                    <!-- @END_COMPONENT: RecentActivity -->
+                </div>
+
+                <!-- Data Tables Section -->
+                <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                    
+                    <!-- @COMPONENT: TopPerformers -->
+                    <!-- Top Performing Partners -->
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-lg font-semibold text-slate-900">Top Performing Partners</h3>
+                            <button class="text-sm text-blue-600 hover:text-blue-700">View all</button>
+                        </div>
+                        
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead>
+                                    <tr class="border-b border-slate-100">
+                                        <th class="text-left text-xs font-medium text-slate-500 uppercase tracking-wider pb-3">Partner</th>
+                                        <th class="text-left text-xs font-medium text-slate-500 uppercase tracking-wider pb-3">Revenue</th>
+                                        <th class="text-left text-xs font-medium text-slate-500 uppercase tracking-wider pb-3">CR</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100">
+                                    <!-- @MAP: topPartners.map(partner => ( -->
+                                    <tr data-mock="true">
+                                        <td class="py-3">
+                                            <div class="flex items-center space-x-3">
+                                                <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                                                    <span class="text-white text-xs font-medium">JD</span>
+                                                </div>
+                                                <div>
+                                                    <p class="text-sm font-medium text-slate-900">John Doe</p>
+                                                    <p class="text-xs text-slate-500">ID: #1248</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="py-3">
+                                            <p class="text-sm font-semibold text-slate-900">$24,890</p>
+                                        </td>
+                                        <td class="py-3">
+                                            <span class="inline-flex px-2 py-1 text-xs font-medium bg-green-100 text-green-600 rounded-full">4.2%</span>
+                                        </td>
+                                    </tr>
+
+                                    <tr data-mock="true">
+                                        <td class="py-3">
+                                            <div class="flex items-center space-x-3">
+                                                <div class="w-8 h-8 bg-gradient-to-br from-green-500 to-teal-600 rounded-full flex items-center justify-center">
+                                                    <span class="text-white text-xs font-medium">AS</span>
+                                                </div>
+                                                <div>
+                                                    <p class="text-sm font-medium text-slate-900">Alice Smith</p>
+                                                    <p class="text-xs text-slate-500">ID: #1156</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="py-3">
+                                            <p class="text-sm font-semibold text-slate-900">$18,750</p>
+                                        </td>
+                                        <td class="py-3">
+                                            <span class="inline-flex px-2 py-1 text-xs font-medium bg-green-100 text-green-600 rounded-full">3.8%</span>
+                                        </td>
+                                    </tr>
+
+                                    <tr data-mock="true">
+                                        <td class="py-3">
+                                            <div class="flex items-center space-x-3">
+                                                <div class="w-8 h-8 bg-gradient-to-br from-orange-500 to-red-600 rounded-full flex items-center justify-center">
+                                                    <span class="text-white text-xs font-medium">MJ</span>
+                                                </div>
+                                                <div>
+                                                    <p class="text-sm font-medium text-slate-900">Mike Johnson</p>
+                                                    <p class="text-xs text-slate-500">ID: #1089</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="py-3">
+                                            <p class="text-sm font-semibold text-slate-900">$15,290</p>
+                                        </td>
+                                        <td class="py-3">
+                                            <span class="inline-flex px-2 py-1 text-xs font-medium bg-green-100 text-green-600 rounded-full">3.1%</span>
+                                        </td>
+                                    </tr>
+                                    <!-- @END_MAP -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <!-- @END_COMPONENT: TopPerformers -->
+
+                    <!-- @COMPONENT: RecentOffers -->
+                    <!-- Recent Offers -->
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-lg font-semibold text-slate-900">Recent Offers</h3>
+                            <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors" data-event="click:createOffer">
+                                <i class="fas fa-plus mr-2"></i>Create Offer
+                            </button>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <!-- @MAP: recentOffers.map(offer => ( -->
+                            <div class="flex items-center justify-between p-4 border border-slate-100 rounded-lg hover:bg-slate-50 transition-colors" data-mock="true">
+                                <div class="flex items-center space-x-3">
+                                    <!-- A modern crypto exchange logo with blue and gold gradient -->
+                                    <img src="https://images.unsplash.com/photo-1639762681485-074b7f938ba0?ixlib=rb-4.0.3&auto=format&fit=crop&w=40&h=40" alt="Crypto Exchange Logo" class="w-10 h-10 rounded-lg object-cover" />
+                                    <div>
+                                        <p class="text-sm font-medium text-slate-900">Crypto Exchange Pro</p>
+                                        <p class="text-xs text-slate-500">CPA • Finance</p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-sm font-semibold text-slate-900">$150</p>
+                                    <span class="inline-flex px-2 py-1 text-xs font-medium bg-green-100 text-green-600 rounded-full">Active</span>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center justify-between p-4 border border-slate-100 rounded-lg hover:bg-slate-50 transition-colors" data-mock="true">
+                                <div class="flex items-center space-x-3">
+                                    <!-- A modern fitness app interface on a smartphone -->
+                                    <img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=40&h=40" alt="Fitness App Logo" class="w-10 h-10 rounded-lg object-cover" />
+                                    <div>
+                                        <p class="text-sm font-medium text-slate-900">FitLife Premium</p>
+                                        <p class="text-xs text-slate-500">CPS • Health</p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-sm font-semibold text-slate-900">$75</p>
+                                    <span class="inline-flex px-2 py-1 text-xs font-medium bg-green-100 text-green-600 rounded-full">Active</span>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center justify-between p-4 border border-slate-100 rounded-lg hover:bg-slate-50 transition-colors" data-mock="true">
+                                <div class="flex items-center space-x-3">
+                                    <!-- A modern e-commerce shopping interface with cart icon -->
+                                    <img src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?ixlib=rb-4.0.3&auto=format&fit=crop&w=40&h=40" alt="E-commerce Platform Logo" class="w-10 h-10 rounded-lg object-cover" />
+                                    <div>
+                                        <p class="text-sm font-medium text-slate-900">ShopMaster</p>
+                                        <p class="text-xs text-slate-500">CPA • E-commerce</p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-sm font-semibold text-slate-900">$45</p>
+                                    <span class="inline-flex px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-600 rounded-full">Pending</span>
+                                </div>
+                            </div>
+                            <!-- @END_MAP -->
+                        </div>
+                    </div>
+                    <!-- @END_COMPONENT: RecentOffers -->
+                </div>
+
+                <!-- System Status and Alerts -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                    <h3 class="text-lg font-semibold text-slate-900 mb-6">System Status & Alerts</h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- System Health -->
+                        <div class="text-center">
+                            <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                <i class="fas fa-heartbeat text-green-600 text-xl"></i>
+                            </div>
+                            <h4 class="text-sm font-semibold text-slate-900">System Health</h4>
+                            <p class="text-2xl font-bold text-green-600" data-mock="true">99.9%</p>
+                            <p class="text-xs text-slate-500">Uptime</p>
+                        </div>
+
+                        <!-- API Performance -->
+                        <div class="text-center">
+                            <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                <i class="fas fa-tachometer-alt text-blue-600 text-xl"></i>
+                            </div>
+                            <h4 class="text-sm font-semibold text-slate-900">API Performance</h4>
+                            <p class="text-2xl font-bold text-blue-600" data-mock="true">142ms</p>
+                            <p class="text-xs text-slate-500">Avg Response</p>
+                        </div>
+
+                        <!-- Active Issues -->
+                        <div class="text-center">
+                            <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+                            </div>
+                            <h4 class="text-sm font-semibold text-slate-900">Active Issues</h4>
+                            <p class="text-2xl font-bold text-red-600" data-mock="true">2</p>
+                            <p class="text-xs text-slate-500">Critical</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+        <!-- @END_COMPONENT: MainContent -->
+    </div>
+    <!-- @END_COMPONENT: MainLayout -->
+
+    <!-- @COMPONENT: ModalsAndOverlays -->
+    <!-- Create Offer Modal (Hidden by default) -->
+    <div id="createOfferModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-xl max-w-2xl w-full max-h-screen overflow-y-auto">
+                <div class="flex items-center justify-between p-6 border-b border-slate-200">
+                    <h3 class="text-lg font-semibold text-slate-900">Create New Offer</h3>
+                    <button class="text-slate-400 hover:text-slate-600" data-event="click:closeModal">
+                        <i class="fas fa-times w-5 h-5"></i>
+                    </button>
+                </div>
+                
+                <div class="p-6 space-y-6">
+                    <!-- Form fields would go here -->
+                    <!-- @FUNCTIONALITY: Implement offer creation form with validation -->
+                    <div class="text-center py-8">
+                        <i class="fas fa-bullseye text-4xl text-slate-300 mb-4"></i>
+                        <p class="text-slate-500">Offer creation form would be implemented here</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: ModalsAndOverlays -->
+
+    <script>
+        (function() {
+            // TODO: Implement business logic, API calls, or state management
+            
+            // Mobile menu toggle
+            const mobileMenuButton = document.querySelector('[data-event*="mobile-menu"]');
+            const sidebar = document.querySelector('aside');
+            
+            // Modal handlers
+            const createOfferButton = document.querySelector('[data-event="click:createOffer"]');
+            const modal = document.getElementById('createOfferModal');
+            const closeModalButton = document.querySelector('[data-event="click:closeModal"]');
+            
+            if (createOfferButton && modal) {
+                createOfferButton.addEventListener('click', () => {
+                    modal.classList.remove('hidden');
+                });
+            }
+            
+            if (closeModalButton && modal) {
+                closeModalButton.addEventListener('click', () => {
+                    modal.classList.add('hidden');
+                });
+                
+                // Close on backdrop click
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        modal.classList.add('hidden');
+                    }
+                });
+            }
+            
+            // Simulated real-time updates
+            function updateLiveTraffic() {
+                const trafficElement = document.querySelector('[data-bind="liveTraffic"]');
+                if (trafficElement) {
+                    const currentCount = parseInt(trafficElement.textContent.match(/\d+/)[0]);
+                    const newCount = currentCount + Math.floor(Math.random() * 10) - 5;
+                    trafficElement.textContent = `${Math.max(0, newCount)} online`;
+                }
+            }
+            
+            // Update traffic count every 30 seconds
+            setInterval(updateLiveTraffic, 30000);
+        })();
+    </script>
+</body>
+</html>
