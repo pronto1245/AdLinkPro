@@ -5,16 +5,8 @@
     "moduleResolution": "Node",
     "outDir": "dist",
     "rootDir": "./",
-    "baseUrl": ".",
-    "paths": {
-      "@shared/*": ["shared/*"]
-    },
     "strict": true,
     "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true
-  },
-  "ts-node": {
-    "esm": true
   }
 }
