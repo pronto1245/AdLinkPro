@@ -13,6 +13,8 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { useToast } from '@/hooks/use-toast';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
+import { type User } from '@shared/schema';
+import { useProfileWebSocket } from '@/hooks/useProfileWebSocket';
 
 export default function PartnerSettings() {
   const { user } = useAuth();
@@ -24,9 +26,10 @@ export default function PartnerSettings() {
   const queryClient = useQueryClient();
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
+  const { isConnected: wsConnected, lastMessage } = useProfileWebSocket();
 
   // Загружаем профиль партнёра с сервера
-  const { data: profileData, isLoading: isProfileLoading } = useQuery({
+  const { data: profileData, isLoading: isProfileLoading } = useQuery<User>({
     queryKey: ['/api/partner/profile'],
     queryFn: async () => await apiRequest('/api/partner/profile', 'GET')
   });
@@ -64,6 +67,13 @@ export default function PartnerSettings() {
       }));
     }
   }, [profileData]);
+
+  // Refresh data when real-time updates are received
+  useEffect(() => {
+    if (lastMessage?.type === 'settings_change' || lastMessage?.type === 'profile_update') {
+      queryClient.invalidateQueries({ queryKey: ['/api/partner/profile'] });
+    }
+  }, [lastMessage, queryClient]);
 
   const handleNotificationChange = (key: string, value: boolean) => {
     setNotifications(prev => ({ ...prev, [key]: value }));
@@ -231,6 +241,18 @@ export default function PartnerSettings() {
             <p className="text-muted-foreground mt-1">
               Управляйте настройками аккаунта и предпочтениями
             </p>
+          </div>
+          <div className="flex items-center gap-3">
+            {/* WebSocket Connection Status */}
+            <div className="flex items-center gap-2">
+              <div 
+                className={`w-2 h-2 rounded-full ${wsConnected ? 'bg-green-500' : 'bg-red-500'}`}
+                title={wsConnected ? 'Подключение активно' : 'Соединение отсутствует'}
+              />
+              <span className="text-xs text-muted-foreground">
+                {wsConnected ? 'Online' : 'Offline'}
+              </span>
+            </div>
           </div>
         </div>
 

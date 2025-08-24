@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Save, User, Mail, Phone, MapPin, Calendar, Globe, RefreshCw } from 'lucide-react';
+import { Save, User as UserIcon, Mail, Phone, MapPin, Calendar, Globe, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -12,31 +12,18 @@ import { useTranslation } from 'react-i18next';
 import { useToast } from '@/hooks/use-toast';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
-
-interface PartnerProfileData {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  company: string;
-  country: string;
-  timezone: string;
-  currency: string;
-  telegram: string;
-  partnerNumber: string;
-  createdAt: string;
-  lastLoginAt: string;
-}
+import { type User } from '@shared/schema';
+import { useProfileWebSocket } from '@/hooks/useProfileWebSocket';
 
 export default function PartnerProfile() {
   const { user } = useAuth();
   const { t } = useTranslation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { isConnected: wsConnected, lastMessage } = useProfileWebSocket();
 
   // Загружаем полный профиль партнёра
-  const { data: profileData, isLoading: isProfileLoading, error } = useQuery<PartnerProfileData>({
+  const { data: profileData, isLoading: isProfileLoading, error } = useQuery<User>({
     queryKey: ['/api/partner/profile'],
     enabled: !!user?.id,
   });
@@ -52,6 +39,13 @@ export default function PartnerProfile() {
     currency: 'USD',
     telegram: '',
   });
+
+  // Refresh data when real-time updates are received
+  useEffect(() => {
+    if (lastMessage?.type === 'profile_update') {
+      queryClient.invalidateQueries({ queryKey: ['/api/partner/profile'] });
+    }
+  }, [lastMessage, queryClient]);
 
   // Обновляем форму при загрузке данных
   useEffect(() => {
@@ -228,6 +222,16 @@ export default function PartnerProfile() {
             </p>
           </div>
           <div className="flex items-center gap-3">
+            {/* WebSocket Connection Status */}
+            <div className="flex items-center gap-2">
+              <div 
+                className={`w-2 h-2 rounded-full ${wsConnected ? 'bg-green-500' : 'bg-red-500'}`}
+                title={wsConnected ? 'Подключение активно' : 'Соединение отсутствует'}
+              />
+              <span className="text-xs text-muted-foreground">
+                {wsConnected ? 'Online' : 'Offline'}
+              </span>
+            </div>
             {profileData?.partnerNumber && (
               <div className="text-sm text-muted-foreground">
                 ID: <span className="font-mono">{profileData.partnerNumber}</span>
@@ -250,7 +254,7 @@ export default function PartnerProfile() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <User className="h-5 w-5" />
+              <UserIcon className="h-5 w-5" />
               Личная информация
             </CardTitle>
             <CardDescription>
