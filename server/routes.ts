@@ -22,7 +22,7 @@ import { randomUUID } from "crypto";
 import { nanoid } from "nanoid";
 import { notificationService } from "./services/notification";
 import { auditLog, checkIPBlacklist, rateLimiter, loginRateLimiter, recordFailedLogin, trackDevice, detectFraud, getAuditLogs } from "./middleware/security";
-import { authenticateToken, getAuthenticatedUser, requireRole } from "./middleware/auth";
+import { authenticateToken, getAuthenticatedUser, requireRole } from "./middleware/authorization";
 import { PostbackService } from "./services/postback";
 import conversionRoutes from "./routes/conversion";
 import analyticsRoutes from "./routes/analytics";
@@ -1481,7 +1481,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         processor: processorStats,
         mode: bullmqStats.error ? 'autonomous' : 'bullmq'
       });
-    } catch (_error) {
+    } catch (error) {
       res.json({
         bullmq: {
           waiting: 0,
@@ -2090,7 +2090,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           lastName: user.lastName
         } 
       });
-    } catch (_error) {
+    } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ error: error.errors });
       }
@@ -2323,7 +2323,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         },
         message: "Partner registration successful"
       });
-    } catch (_error) {
+    } catch (error) {
       console.log("❌ Partner registration error:", error?.message || error);
       if (error instanceof z.ZodError) {
         return res.status(400).json({ error: error.errors });
@@ -2504,7 +2504,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         },
         message: "Advertiser registration successful"
       });
-    } catch (_error) {
+    } catch (error) {
       console.log("❌ Advertiser registration error:", error?.message || error);
       if (error instanceof z.ZodError) {
         return res.status(400).json({ error: error.errors });
@@ -3753,7 +3753,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const { password, ...userWithoutPassword } = user;
       res.status(201).json(userWithoutPassword);
-    } catch (_error) {
+    } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ error: error.errors });
       }
@@ -6058,7 +6058,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const ticket = await storage.createTicket(ticketData);
       res.status(201).json(ticket);
-    } catch (_error) {
+    } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ error: error.errors });
       }
@@ -6443,7 +6443,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         try {
           await storage.blockUser(userId, reason, authUser.id);
           successCount++;
-        } catch (_error) {
+        } catch (error) {
           failedCount++;
           console.error(`Failed to block user ${userId}:`, error);
         }
@@ -6475,7 +6475,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         try {
           await storage.unblockUser(userId);
           successCount++;
-        } catch (_error) {
+        } catch (error) {
           failedCount++;
           console.error(`Failed to unblock user ${userId}:`, error);
         }
@@ -6512,7 +6512,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             await storage.softDeleteUser(userId, authUser.id);
           }
           successCount++;
-        } catch (_error) {
+        } catch (error) {
           failedCount++;
           console.error(`Failed to delete user ${userId}:`, error);
         }
@@ -6857,7 +6857,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         try {
           const offer = await storage.updateOffer(offerId, { status: 'active' });
           updatedOffers.push(offer);
-        } catch (_error) {
+        } catch (error) {
           console.error(`Error activating offer ${offerId}:`, error);
         }
       }
@@ -6886,7 +6886,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         try {
           const offer = await storage.updateOffer(offerId, { status: 'paused' });
           updatedOffers.push(offer);
-        } catch (_error) {
+        } catch (error) {
           console.error(`Error pausing offer ${offerId}:`, error);
         }
       }
@@ -6916,7 +6916,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           await storage.deleteOffer(offerId);
           deletedOffers.push(offerId);
           console.log(`Successfully deleted offer: ${offerId}`);
-        } catch (_error) {
+        } catch (error) {
           console.error(`Error deleting offer ${offerId}:`, error);
         }
       }
@@ -8669,7 +8669,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           .select({ count: count(users.id) })
           .from(users)
           .where(and(eq(users.role, 'affiliate'), eq(users.isActive, true)));
-      } catch (_error) {
+      } catch (error) {
         activePartnersResult = { count: 15 };
       }
 
@@ -8678,7 +8678,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           .select({ count: count(offers.id) })
           .from(offers)
           .where(eq(offers.status, 'active'));
-      } catch (_error) {
+      } catch (error) {
         activeOffersResult = { count: 8 };
       }
 
@@ -8691,7 +8691,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             totalRevenue: sum(statistics.revenue)
           })
           .from(statistics);
-      } catch (_error) {
+      } catch (error) {
         clicksResult = [{ totalClicks: 0, totalLeads: 0, totalConversions: 0, totalRevenue: 0 }];
       }
 
@@ -8699,7 +8699,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         [fraudResult] = await db
           .select({ count: count(fraudAlerts.id) })
           .from(fraudAlerts);
-      } catch (_error) {
+      } catch (error) {
         fraudResult = { count: 12 };
       }
 
@@ -11443,7 +11443,7 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
             VALUES (${randomUUID()}, ${request.partner_id}, ${offerId}, 'active', ${new Date().toISOString()}, ${advertiserId})
             ON CONFLICT DO NOTHING
           `);
-        } catch (_error) {
+        } catch (error) {
           console.log('Note: partner_offers relation could not be created:', error.message);
         }
       }
@@ -11928,7 +11928,7 @@ P00002,partner2,partner2@example.com,active,2,1890,45,2.38,$2250.00,$1350.00,$90
   try {
     const { setupAccessRequestsRoutes } = await import('./api/access-requests');
     setupAccessRequestsRoutes(app);
-  } catch (_error) {
+  } catch (error) {
     console.log('Skipping access-requests routes - module not found');
   }
 

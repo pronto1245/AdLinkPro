@@ -12,7 +12,8 @@ import {
   requirePermission,
   requireOwnership,
   canAccessUser,
-  getAuthenticatedUser
+  getAuthenticatedUser,
+  requireAuth
 } from './unifiedAuth';
 
 // Re-export the unified authentication functions for backward compatibility
@@ -22,7 +23,8 @@ export {
   requirePermission,
   requireOwnership,
   canAccessUser,
-  getAuthenticatedUser
+  getAuthenticatedUser,
+  requireAuth
 };
 
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret';
