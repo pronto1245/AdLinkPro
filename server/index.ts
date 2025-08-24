@@ -9,6 +9,10 @@ import { registerRoutes } from "./routes.js";
 const app = express();
 const PORT = process.env.PORT || 8000;
 
+// Add basic middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 // Add static file serving before registering API routes
 const frontendPath = path.join(__dirname, "..", "dist");
 app.use(express.static(frontendPath));
