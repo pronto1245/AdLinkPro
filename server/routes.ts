@@ -109,11 +109,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Import tracking and postback routes
   const trackingRoutes = await import('./routes/tracking');
   const postbackRoutes = await import('./routes/postbacks');
+  const notificationRoutes = await import('./routes/notifications');
   
   // Add new tracking and postback routes
   app.use('/track', trackingRoutes.default);
   app.use('/api/postbacks', postbackRoutes.default);
-  console.log('=== POSTBACK AND TRACKING ROUTES ADDED ===');
+  app.use('/api', notificationRoutes.default);
+  console.log('=== POSTBACK, TRACKING AND NOTIFICATION ROUTES ADDED ===');
 
   // FIXED: Team API routes added first without middleware for testing
   console.log('=== ADDING TEAM ROUTES WITHOUT MIDDLEWARE ===');
@@ -1606,100 +1608,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Add conversion routes
   app.use('/api/conversion', conversionRoutes);
-
-  // =================== NOTIFICATIONS API ===================
-  
-  // Get notifications for current user
-  app.get('/api/notifications', authenticateToken, async (req, res) => {
-    try {
-      const userId = req.user?.id || req.userId;
-      
-      // Объединяем данные из обеих таблиц уведомлений
-      const userNotifications = await db.execute(sql`
-        SELECT id, user_id, type, title, message, is_read, data as metadata, created_at
-        FROM user_notifications 
-        WHERE user_id = ${userId}
-      `);
-      
-      const oldNotifications = await db.execute(sql`
-        SELECT id, user_id, type, title, message, is_read, metadata, created_at
-        FROM notifications 
-        WHERE user_id = ${userId}
-      `);
-      
-      // Объединяем и сортируем по дате
-      const allNotifications = [...userNotifications.rows, ...oldNotifications.rows]
-        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-      
-      res.json(allNotifications);
-    } catch (error) {
-      console.error('Get notifications error:', error);
-      res.status(500).json({ error: 'Internal server error' });
-    }
-  });
-
-  // Mark notification as read
-  app.put('/api/notifications/:id/read', authenticateToken, async (req, res) => {
-    try {
-      console.log('=== MARK NOTIFICATION AS READ ===');
-      const userId = req.user?.id || req.userId;
-      const notificationId = req.params.id;
-      console.log('UserId:', userId, 'NotificationId:', notificationId);
-      
-      if (!userId) {
-        console.log('No userId found in request');
-        return res.status(401).json({ error: 'User ID required' });
-      }
-      
-      const result = await db.execute(sql`
-        UPDATE user_notifications 
-        SET is_read = true 
-        WHERE id = ${notificationId} AND user_id = ${userId}
-      `);
-      
-      console.log('Update result:', result);
-      res.json({ success: true });
-    } catch (error) {
-      console.error('Mark notification as read error:', error);
-      res.status(500).json({ error: 'Internal server error' });
-    }
-  });
-
-  // Delete notification
-  app.delete('/api/notifications/:id', authenticateToken, async (req, res) => {
-    try {
-      const userId = req.user?.id || req.userId;
-      const notificationId = req.params.id;
-      
-      await db.execute(sql`
-        DELETE FROM user_notifications 
-        WHERE id = ${notificationId} AND user_id = ${userId}
-      `);
-      
-      res.json({ success: true });
-    } catch (error) {
-      console.error('Delete notification error:', error);
-      res.status(500).json({ error: 'Internal server error' });
-    }
-  });
-
-  // Mark all notifications as read
-  app.put('/api/notifications/mark-all-read', authenticateToken, async (req, res) => {
-    try {
-      const userId = req.user?.id || req.userId;
-      
-      await db.execute(sql`
-        UPDATE user_notifications 
-        SET is_read = true 
-        WHERE user_id = ${userId} AND is_read = false
-      `);
-      
-      res.json({ success: true });
-    } catch (error) {
-      console.error('Mark all notifications as read error:', error);
-      res.status(500).json({ error: 'Internal server error' });
-    }
-  });
 
   // =================== POSTBACK MONITORING API ===================
   
