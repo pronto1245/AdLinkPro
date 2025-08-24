@@ -19,7 +19,7 @@ COPY package*.json ./
 RUN npm ci --omit=dev && npm cache clean --force
 
 # берем только собранный dist
-COPY --from=build /app/dist ./dist
+COPY --from=build /app/client/dist ./dist
 
 # Koyeb сам передаст PORT
 CMD ["npm","start"]
